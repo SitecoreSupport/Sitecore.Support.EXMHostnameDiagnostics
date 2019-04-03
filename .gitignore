@@ -1,0 +1,7 @@
+src/.vs/
+src/packages/
+src/Sitecore.Support.EXMHostnameDiagnostics/bin/
+src/Sitecore.Support.EXMHostnameDiagnostics/obj/
+*.pubxml
+*.user
+*.suo
