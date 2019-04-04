@@ -54,8 +54,11 @@ namespace Sitecore.Support.Modules.EmailCampaign.Core.Pipelines.GenerateLink
       Assert.IsNotNull(args, "Arguments can't be null");
       Assert.IsNotNull(args.Url, "Url link can't be null");
 
+      Log.Audit($"Sitecore Support In the MapHostname processor. Link {args.Url}, PreviewMode: {args.PreviewMode}, MailMessage.ID: {args.MailMessage.ID}, MailMessage.Language: {args.MailMessage.TargetLanguage}", this);
+
       if (args.Url.StartsWith("#") || args.Url.StartsWith("javascript:") || args.Url.StartsWith("mailto:"))
       {
+        Log.Audit($"Sitecore Support link {args.Url} was skipped since it was not meant for encoding.", this);
         return;
       }
 
@@ -69,14 +72,18 @@ namespace Sitecore.Support.Modules.EmailCampaign.Core.Pipelines.GenerateLink
         defaultUrlOptions.AlwaysIncludeServerUrl = true;
         using (new SiteContextSwitcher(Util.GetContentSite()))
         {
-          args.Url = LinkManager.GetItemUrl(new ItemUtilExt().GetItem(link.ItemId), defaultUrlOptions);
+          string encodedUrl = LinkManager.GetItemUrl(new ItemUtilExt().GetItem(link.ItemId), defaultUrlOptions);
+          Log.Audit($"Dynamic link {args.Url} was transformed to {encodedUrl}", this);
+          args.Url = encodedUrl;
         }
       }
       else
       {
         if (!LinksManager.IsAbsoluteLink(args.Url))
         {
-          args.Url = args.ServerUrl + StringUtil.EnsurePrefix('/', args.Url);
+          var transformedLink = args.ServerUrl + StringUtil.EnsurePrefix('/', args.Url);
+          Log.Audit($"Relative link {args.Url} was transformed to {transformedLink}", this);
+          args.Url = transformedLink;
           args.IsInternalLink = true;
         }
         else
@@ -85,9 +92,13 @@ namespace Sitecore.Support.Modules.EmailCampaign.Core.Pipelines.GenerateLink
         }
       }
 
+      Log.Audit($"Link {args.Url} is considered internal: {args.IsInternalLink}", this);
+
       args.Url = args.PreviewMode
         ? _hostnameMappingService.GetPreviewUrl(args.Url, args.MailMessage.ManagerRoot)
         : _hostnameMappingService.GetPublicUrl(args.Url, args.MailMessage.ManagerRoot);
+
+      Log.Audit($"Link after all transformations: {args.Url}", this);
     }
   }
 }

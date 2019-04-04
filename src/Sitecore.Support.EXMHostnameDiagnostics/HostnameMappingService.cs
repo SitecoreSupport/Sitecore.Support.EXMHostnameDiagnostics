@@ -26,6 +26,8 @@ namespace Sitecore.Support.Modules.EmailCampaign.Core.HostnameMapping
     {
       Assert.ArgumentNotNull(managerRoot, "managerRoot");
 
+      Log.Audit($"Sitecore Support in the GetMappedUrl method. Url: {originalUrl}, type: {type.ToString()}, RootId: {managerRoot.InnerItem.ID}", this);
+
       Uri uri;
       if (string.IsNullOrEmpty(originalUrl))
       {
@@ -44,12 +46,18 @@ namespace Sitecore.Support.Modules.EmailCampaign.Core.HostnameMapping
         return originalUrl;
       }
 
+      
       var leftPart = uri.GetLeftPart(UriPartial.Authority);
+      Log.Audit($"Sitecore Support retrieving hostname mappings for {leftPart}", this);
       var byHostname = _hostnameMappingRepository.GetByHostname(leftPart);
       if (byHostname == null)
       {
+        Log.Audit($"Sitecore Support hostname mapping was not found for {leftPart} in the repository.", this);
+        Log.Audit($"Sitecore Support comparing leftPart: {leftPart} and GlobalSettings.RendererUrl: {GlobalSettings.RendererUrl}", this);
+
         if (!string.Equals(leftPart, GlobalSettings.RendererUrl, StringComparison.OrdinalIgnoreCase))
         {
+          Log.Audit($"Sitecore Support hostaname differs from the GlobalSettings.RendererUrl, returning original url.", this);
           _logger.LogDebug("No mapping definition found for hostname: " + leftPart);
           return originalUrl;
         }
@@ -60,6 +68,12 @@ namespace Sitecore.Support.Modules.EmailCampaign.Core.HostnameMapping
           Preview = managerRoot.Settings.PreviewBaseURL,
           Public = managerRoot.Settings.BaseURL
         };
+
+        Log.Audit($"Sitecore Support hostaname matches the GlobalSettings.RendererUrl. Original: {byHostname.Original}, Preview: {byHostname.Preview}, Public: {byHostname.Public}", this);
+      }
+      else
+      {
+        Log.Audit($"Sitecore Support hostname mapping was found for {leftPart}. Original: {byHostname.Original}, Preview: {byHostname.Preview}, Public: {byHostname.Public}", this);
       }
 
       if (type != HostnameMappingUrlType.Preview)

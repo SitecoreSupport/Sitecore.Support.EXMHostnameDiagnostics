@@ -74,11 +74,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="HostnameMappingService.cs" />
+    <Compile Include="LogLinkToModifyAndServerUrl.cs" />
     <Compile Include="MapHostname.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="App_Config\Include\zzz\Sitecore.Support.EXMHostnameDiagnostics.config" />
+    <Content Include="App_Config\Include\zzz\Sitecore.Support.EXMHostnameDiagnostics.config">
+      <SubType>Designer</SubType>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
